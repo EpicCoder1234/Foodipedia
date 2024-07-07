@@ -10,12 +10,18 @@ secret_key = secrets.token_hex(32)
 print(secret_key) 
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///users.db'
+CORS(app)
+
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///users.db')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'fdsgrrrsdffgdkuikkjjkdfghgfgfdhsqwerertygfhdsdfsdgfdhfgfhgdhgfdterwrth'
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'default-secret-key')
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
+
+
+
 # Database Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
