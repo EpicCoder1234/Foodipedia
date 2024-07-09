@@ -7,21 +7,15 @@ import secrets
 
 # Generate a 256-bit key
 secret_key = secrets.token_hex(32)
-print(secret_key) 
+print(secret_key)
 
 app = Flask(__name__)
-CORS(app)
-
-
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///users.db')
+app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///users.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'default-secret-key')
+app.config['JWT_SECRET_KEY'] = 'fdsgrrrsdffgdkuikkjjkdfghgfgfdhsqwerertygfhdsdfsdgfdhfgfhgdhgfdterwrth'
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
-
-
-
 # Database Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -169,7 +163,7 @@ def get_recipes():
 
     # Print the filtered recipes for debugging
     print("Filtered Recipes:")
-    print(filtered_recipes)    
+    print(filtered_recipes)
       
     return jsonify(filtered_recipes), 200
 
