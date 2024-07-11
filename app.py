@@ -1,19 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import requests
-from flask_migrate import Migrate
 from datetime import datetime
 import os
 
 app = Flask(__name__)
 
 # Configurations
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://foodipedia_users_user:fhCxAgzzkXH7irv3MhtXLkC9xlgOlD95@dpg-cq7k4prv2p9s73c5p3fg-a/foodipedia_users')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'your-database-url')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'sadfkljalsbjl;atrlksa;boihtsdfkjlsadigjsdatlibsaglsigjatliehg')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
+
 db = SQLAlchemy(app)
-migrate = Migrate(app,db)
+migrate = Migrate(app, db)
 jwt = JWTManager(app)
 
 # Database Models
@@ -44,7 +45,11 @@ class UserChoice(db.Model):
         self.food_image = food_image
         self.cuisine = cuisine
 
-# User Registration
+# Create tables
+with app.app_context():
+    db.drop_all()  # Drop all tables to ensure a clean slate
+    db.create_all()  # Create all tables
+
 @app.route('/signup', methods=['GET','POST'])
 def signup():
     data = request.get_json()
@@ -235,4 +240,7 @@ def store_choice():
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
+    app.run(debug=True)
+
+if __name__ == '__main__':
     app.run(debug=True)
