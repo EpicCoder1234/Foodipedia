@@ -110,7 +110,8 @@ def get_recipes():
         'apiKey': api_key,
         'ingredients': ','.join(ingredients),
         'number': 10,
-        'ranking': 1
+        'ranking': 1,
+        'ignorePantry':true
     }
     response = requests.get('https://api.spoonacular.com/recipes/findByIngredients', headers=headers, params=params)
     
@@ -193,9 +194,9 @@ def random_food_choices():
     random_foods = response.json().get('recipes', [])
     choices = [
         {
-            'id': food['id'],
-            'title': food['title'],
-            'image': food['image'],
+            'id': food.get('id', 'N/A'),
+            'title': food.get('title', 'No Title'),
+            'image': food.get('image', 'https://via.placeholder.com/150'),  # Default image if not present
             'cuisine': food.get('cuisines', [])
         }
     for food in random_foods]
