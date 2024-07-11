@@ -1,19 +1,16 @@
-from flask import Flask, request, jsonify
+ffrom flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import requests
 from datetime import datetime
-import secrets
-
-# Generate a 256-bit key
-secret_key = secrets.token_hex(32)
-print(secret_key)
+import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI']='sqlite:///users.db'
 
+# Configurations
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://foodipedia_users_user:fhCxAgzzkXH7irv3MhtXLkC9xlgOlD95@dpg-cq7k4prv2p9s73c5p3fg-a/foodipedia_users')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = 'fdsgrrrsdffgdkuikkjjkdfghgfgfdhsqwerertygfhdsdfsdgfdhfgfhgdhgfdterwrth'
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
 db = SQLAlchemy(app)
 jwt = JWTManager(app)
 # Database Models
