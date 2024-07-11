@@ -11,7 +11,7 @@ app = Flask(__name__)
 # Configurations
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://foodipedia_users_user:fhCxAgzzkXH7irv3MhtXLkC9xlgOlD95@dpg-cq7k4prv2p9s73c5p3fg-a/foodipedia_users')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'sadfkljalsbjl;atrlksa;boihtsdfkjlsadigjsdatlibsaglsigjatliehg')
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
 jwt = JWTManager(app)
