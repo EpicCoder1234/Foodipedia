@@ -196,7 +196,7 @@ def random_food_choices():
         {
             'id': food.get('id', 'N/A'),
             'title': food.get('title', 'No Title'),
-            'image': food.get('image', 'https://via.placeholder.com/150'),  # Default image if not present
+            'image': food.get('image'),  # Default image if not present
             'cuisine': food.get('cuisines', [])
         }
     for food in random_foods]
