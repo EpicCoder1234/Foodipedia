@@ -88,21 +88,45 @@ def foodie_test():
     db.session.commit()
     return jsonify({"message": "Preferences saved successfully"}), 201
 
-@app.route('/recipes', methods=['GET','POST'])
+
+@app.route('/get_ingredients', methods=['GET'])
+@jwt_required()
+def get_ingredients():
+    api_key = 'bdbc6045a8d941a88fd09e1e443ff33b'
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    response = requests.get(f'https://api.spoonacular.com/food/ingredients', headers=headers, params={'apiKey': api_key})
+
+    if response.status_code != 200:
+        return jsonify({"message": "Error fetching ingredients"}), response.status_code
+
+    ingredients = response.json()
+    organized_ingredients = {}  # Organize ingredients by type
+    for ingredient in ingredients:
+        category = ingredient.get('aisle', 'Miscellaneous')
+        if category not in organized_ingredients:
+            organized_ingredients[category] = []
+        organized_ingredients[category].append({
+            'id': ingredient['id'],
+            'name': ingredient['name']
+        })
+
+    return jsonify(organized_ingredients), 200
+
+@app.route('/get_recipes', methods=['GET','POST'])
 @jwt_required()
 def get_recipes():
     user_id = get_jwt_identity()
     data = request.get_json()
     ingredients = data.get('ingredients')
-    
-    # Check if ingredients is a list
+
     if not isinstance(ingredients, list):
         return jsonify({"message": "Ingredients must be a list"}), 400
 
     preferences = FoodPreference.query.filter_by(user_id=user_id).all()
     preferences_list = [pref.preference for pref in preferences]
 
-    # Call to Spoonacular API
     api_key = 'bdbc6045a8d941a88fd09e1e443ff33b'
     headers = {
         'Content-Type': 'application/json'
@@ -111,28 +135,21 @@ def get_recipes():
         'apiKey': api_key,
         'ingredients': ','.join(ingredients),
         'number': 10,
-        'ranking': 1,
-        'ignorePantry':true
+        'ranking': 1
     }
     response = requests.get('https://api.spoonacular.com/recipes/findByIngredients', headers=headers, params=params)
-    
-    # Print the response for debugging
-    print(response.text)
     
     try:
         recipes = response.json()
     except ValueError:
         return jsonify({"message": "Error parsing response from Spoonacular API"}), 500
 
-    # Ensure recipes is a list before filtering
     if not isinstance(recipes, list):
         return jsonify({"message": "Unexpected response format from Spoonacular API", "response": recipes}), 500
     
-    # Filter recipes based on missedIngredientCount and user preferences
     filtered_recipes = []
     for recipe in recipes:
         if recipe.get('missedIngredientCount', 0) == 0:
-            # Check if recipe matches any of the user preferences
             matches_preferences = any(pref in recipe.get('title', '') for pref in preferences_list)
             if matches_preferences:
                 filtered_recipes.append(recipe)
@@ -250,6 +267,10 @@ def store_choice():
     # Determine top 3 cuisines
     sorted_cuisines = sorted(cuisine_count.items(), key=lambda item: item[1], reverse=True)
     top_cuisines = [cuisine for cuisine, count in sorted_cuisines[:3]]
+    for pref in top_cuisnes:
+        new_pref = FoodPreference(user_id=user_id, preference=pref)
+        db.session.add(new_pref)
+    db.session.commit()
 
     # Determine top 7 taste profiles
     sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
