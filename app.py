@@ -267,7 +267,7 @@ def store_choice():
     # Determine top 3 cuisines
     sorted_cuisines = sorted(cuisine_count.items(), key=lambda item: item[1], reverse=True)
     top_cuisines = [cuisine for cuisine, count in sorted_cuisines[:3]]
-    for pref in top_cuisnes:
+    for pref in top_cuisines:
         new_pref = FoodPreference(user_id=user_id, preference=pref)
         db.session.add(new_pref)
     db.session.commit()
