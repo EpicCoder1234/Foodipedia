@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import requests
+import json
 from datetime import datetime
 import os
 
@@ -223,20 +224,43 @@ def store_choice():
     db.session.add(choice)
     db.session.commit()
 
-    # After storing the choice, fetch all choices by the user to determine top cuisines
+    # Fetch all choices by the user to determine top cuisines
     user_choices = UserChoice.query.filter_by(user_id=current_user_id).all()
     cuisine_count = {}
+    taste_profile_count = {}
+
     for choice in user_choices:
         for cuisine in choice.cuisine:
             if cuisine not in cuisine_count:
                 cuisine_count[cuisine] = 0
             cuisine_count[cuisine] += 1
 
+        # Fetch taste profile for each food choice
+        taste_response = requests.get(
+            f"https://api.spoonacular.com/recipes/{choice.food_id}/tasteWidget.json",
+            params={'apiKey': 'your-api-key'}
+        )
+        if taste_response.status_code == 200:
+            taste_data = taste_response.json()
+            for taste, value in taste_data.items():
+                if taste not in taste_profile_count:
+                    taste_profile_count[taste] = 0
+                taste_profile_count[taste] += value
+
     # Determine top 3 cuisines
     sorted_cuisines = sorted(cuisine_count.items(), key=lambda item: item[1], reverse=True)
     top_cuisines = [cuisine for cuisine, count in sorted_cuisines[:3]]
 
-    return jsonify({"message": "Choice stored successfully", "top_cuisines": top_cuisines}), 200
+    # Determine top 7 taste profiles
+    sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
+    top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
+
+    return jsonify({
+        "message": "Choice stored successfully",
+        "top_cuisines": top_cuisines,
+        "top_taste_profiles": top_taste_profiles
+    }), 200
+
 
 if __name__ == '__main__':
     with app.app_context():
