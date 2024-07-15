@@ -101,18 +101,23 @@ def get_ingredients():
     if response.status_code != 200:
         return jsonify({"message": "Error fetching ingredients"}), response.status_code
 
-    ingredients = response.json()
-    organized_ingredients = {}  # Organize ingredients by type
-    for ingredient in ingredients:
-        category = ingredient.get('aisle', 'Miscellaneous')
-        if category not in organized_ingredients:
-            organized_ingredients[category] = []
-        organized_ingredients[category].append({
-            'id': ingredient['id'],
-            'name': ingredient['name']
-        })
+    try:
+        ingredients = response.json()
+        organized_ingredients = {}
+        for ingredient in ingredients:
+            category = ingredient.get('aisle', 'Miscellaneous')
+            if category not in organized_ingredients:
+                organized_ingredients[category] = []
+            organized_ingredients[category].append({
+                'id': ingredient['id'],
+                'name': ingredient['name']
+            })
+        return jsonify(organized_ingredients), 200
+    except Exception as e:
+        return jsonify({"message": "Error processing ingredients", "error": str(e)}), 500
 
-    return jsonify(organized_ingredients), 200
+if __name__ == "__main__":
+    app.run(debug=True)
 
 @app.route('/get_recipes', methods=['GET','POST'])
 @jwt_required()
