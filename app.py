@@ -260,7 +260,7 @@ def store_choice():
         # Fetch taste profile for each food choice
         taste_response = requests.get(
             f"https://api.spoonacular.com/recipes/{choice.food_id}/tasteWidget.json",
-            params={'apiKey': 'your-api-key'}
+            params={'apiKey': 'bdbc6045a8d941a88fd09e1e443ff33b'}
         )
         if taste_response.status_code == 200:
             taste_data = taste_response.json()
@@ -273,14 +273,19 @@ def store_choice():
     sorted_cuisines = sorted(cuisine_count.items(), key=lambda item: item[1], reverse=True)
     top_cuisines = [cuisine for cuisine, count in sorted_cuisines[:3]]
     for pref in top_cuisines:
-        new_pref = FoodPreference(user_id=current_user_id, preference=pref)
-        db.session.add(new_pref)
+        cuisine_pref = FoodPreference(user_id=current_user_id, preference=pref)
+        db.session.add(cuisine_pref)
     db.session.commit()
 
     # Determine top 7 taste profiles
     sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
     top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
+    for pref in top_taste_profiles:
+        taste_pref = FoodPreference(user_id=current_user_id, preference=pref)
+        db.session.add(taste_pref)
+    db.session.commit()
 
+    
     return jsonify({
         "message": "Choice stored successfully",
         "top_cuisines": top_cuisines,
