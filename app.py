@@ -201,6 +201,13 @@ import random
 @app.route('/random_food_choices', methods=['GET'])
 @jwt_required()
 def random_food_choices():
+    user_id = get_jwt_identity()
+
+    # Check if user already has preferences
+    user_preferences = FoodPreference.query.filter_by(user_id=user_id).first()
+    if user_preferences:
+        return jsonify({"message": "User already has preferences"}), 200
+
     wave = int(request.args.get('wave', 1))
     
     response = requests.get(
@@ -226,6 +233,7 @@ def random_food_choices():
 
     return jsonify({"wave": wave, "choices": choices}), 200
 
+
 @app.route('/store_choice', methods=['POST'])
 @jwt_required()
 def store_choice():
@@ -246,7 +254,7 @@ def store_choice():
     db.session.add(choice)
     db.session.commit()
 
-    # Fetch all choices by the user to determine top cuisines
+    # Fetch all choices by the user to determine top cuisines and taste profiles
     user_choices = UserChoice.query.filter_by(user_id=current_user_id).all()
     cuisine_count = {}
     taste_profile_count = {}
@@ -285,7 +293,6 @@ def store_choice():
         db.session.add(taste_pref)
     db.session.commit()
 
-    
     return jsonify({
         "message": "Choice stored successfully",
         "top_cuisines": top_cuisines,
