@@ -92,7 +92,7 @@ def foodie_test():
 @app.route('/get_ingredients', methods=['GET'])
 @jwt_required()
 def get_ingredients():
-    api_key = '4a5c8cca35cc44cdb23edf1d222b786f'
+    api_key = 'bdbc6045a8d941a88fd09e1e443ff33b'
     headers = {
         'Content-Type': 'application/json'
     }
@@ -116,9 +116,6 @@ def get_ingredients():
     except Exception as e:
         return jsonify({"message": "Error processing ingredients", "error": str(e)}), 500
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
 @app.route('/get_recipes', methods=['GET','POST'])
 @jwt_required()
 def get_recipes():
@@ -132,7 +129,7 @@ def get_recipes():
     preferences = FoodPreference.query.filter_by(user_id=user_id).all()
     preferences_list = [pref.preference for pref in preferences]
 
-    api_key = '4a5c8cca35cc44cdb23edf1d222b786f'
+    api_key = 'bdbc6045a8d941a88fd09e1e443ff33b'
     headers = {
         'Content-Type': 'application/json'
     }
@@ -201,15 +198,13 @@ import random
 @app.route('/random_food_choices', methods=['GET'])
 @jwt_required()
 def random_food_choices():
-    user_id = get_jwt_identity()
-
     wave = int(request.args.get('wave', 1))
     
     response = requests.get(
         'https://api.spoonacular.com/recipes/random',
         params={
             'number': 4,
-            'apiKey': '4a5c8cca35cc44cdb23edf1d222b786f'
+            'apiKey': 'bdbc6045a8d941a88fd09e1e443ff33b'
         }
     )
 
@@ -227,7 +222,6 @@ def random_food_choices():
     for food in random_foods]
 
     return jsonify({"wave": wave, "choices": choices}), 200
-
 
 @app.route('/store_choice', methods=['POST'])
 @jwt_required()
@@ -249,7 +243,7 @@ def store_choice():
     db.session.add(choice)
     db.session.commit()
 
-    # Fetch all choices by the user to determine top cuisines and taste profiles
+    # Fetch all choices by the user to determine top cuisines
     user_choices = UserChoice.query.filter_by(user_id=current_user_id).all()
     cuisine_count = {}
     taste_profile_count = {}
@@ -263,7 +257,7 @@ def store_choice():
         # Fetch taste profile for each food choice
         taste_response = requests.get(
             f"https://api.spoonacular.com/recipes/{choice.food_id}/tasteWidget.json",
-            params={'apiKey': '4a5c8cca35cc44cdb23edf1d222b786f'}
+            params={'apiKey': 'bdbc6045a8d941a88fd09e1e443ff33b'}
         )
         if taste_response.status_code == 200:
             taste_data = taste_response.json()
@@ -288,6 +282,7 @@ def store_choice():
         db.session.add(taste_pref)
     db.session.commit()
 
+    
     return jsonify({
         "message": "Choice stored successfully",
         "top_cuisines": top_cuisines,
@@ -295,11 +290,8 @@ def store_choice():
     }), 200
 
 
-
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
 
-if __name__ == '__main__':
-    app.run(debug=True)
