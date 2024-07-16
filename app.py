@@ -92,7 +92,7 @@ def foodie_test():
 @app.route('/get_ingredients', methods=['GET'])
 @jwt_required()
 def get_ingredients():
-    api_key = 'bdbc6045a8d941a88fd09e1e443ff33b'
+    api_key = '4a5c8cca35cc44cdb23edf1d222b786f'
     headers = {
         'Content-Type': 'application/json'
     }
@@ -132,7 +132,7 @@ def get_recipes():
     preferences = FoodPreference.query.filter_by(user_id=user_id).all()
     preferences_list = [pref.preference for pref in preferences]
 
-    api_key = 'bdbc6045a8d941a88fd09e1e443ff33b'
+    api_key = '4a5c8cca35cc44cdb23edf1d222b786f'
     headers = {
         'Content-Type': 'application/json'
     }
@@ -214,7 +214,7 @@ def random_food_choices():
         'https://api.spoonacular.com/recipes/random',
         params={
             'number': 4,
-            'apiKey': 'bdbc6045a8d941a88fd09e1e443ff33b'
+            'apiKey': '4a5c8cca35cc44cdb23edf1d222b786f'
         }
     )
 
@@ -268,7 +268,7 @@ def store_choice():
         # Fetch taste profile for each food choice
         taste_response = requests.get(
             f"https://api.spoonacular.com/recipes/{choice.food_id}/tasteWidget.json",
-            params={'apiKey': 'bdbc6045a8d941a88fd09e1e443ff33b'}
+            params={'apiKey': '4a5c8cca35cc44cdb23edf1d222b786f'}
         )
         if taste_response.status_code == 200:
             taste_data = taste_response.json()
