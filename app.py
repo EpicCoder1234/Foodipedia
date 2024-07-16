@@ -203,11 +203,6 @@ import random
 def random_food_choices():
     user_id = get_jwt_identity()
 
-    # Check if user already has preferences
-    user_preferences = FoodPreference.query.filter_by(user_id=user_id).first()
-    if user_preferences:
-        return jsonify({"message": "User already has preferences"}), 200
-
     wave = int(request.args.get('wave', 1))
     
     response = requests.get(
