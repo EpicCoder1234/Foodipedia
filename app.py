@@ -38,6 +38,7 @@ class UserChoice(db.Model):
     food_image = db.Column(db.String(250), nullable=False)
     cuisine = db.Column(db.PickleType, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    wave_number = db.Column(db.Integer, nullable=False)
 
     def __init__(self, user_id, food_id, food_title, food_image, cuisine):
         self.user_id = user_id
@@ -97,6 +98,8 @@ def get_ingredients():
         'Content-Type': 'application/json'
     }
     response = requests.get(f'https://api.spoonacular.com/food/ingredients', headers=headers, params={'apiKey': api_key})
+
+    print(response)
 
     if response.status_code != 200:
         return jsonify({"message": "Error fetching ingredients"}), response.status_code
@@ -198,6 +201,13 @@ import random
 @app.route('/random_food_choices', methods=['GET'])
 @jwt_required()
 def random_food_choices():
+    user_id = get_jwt_identity()
+
+    # Check if user already has preferences
+    user_preferences = FoodPreference.query.filter_by(user_id=user_id).first()
+    if user_preferences:
+        return jsonify({"message": "User already has preferences"}), 200
+
     wave = int(request.args.get('wave', 1))
     
     response = requests.get(
@@ -229,21 +239,28 @@ def store_choice():
     current_user_id = get_jwt_identity()
     data = request.get_json()
     selected_food = data.get('selected_food')
+    wave_number = data.get('wave_number')  # Get the current wave number
 
     if not selected_food:
         return jsonify({"message": "No food choice provided"}), 400
 
+    # Store the current choice
     choice = UserChoice(
         user_id=current_user_id,
         food_id=selected_food['id'],
         food_title=selected_food['title'],
         food_image=selected_food['image'],
-        cuisine=selected_food['cuisine']
+        cuisine=selected_food['cuisine'],
+        wave_number=wave_number
     )
     db.session.add(choice)
     db.session.commit()
 
-    # Fetch all choices by the user to determine top cuisines
+    # Check if this is the last wave
+    if wave_number < LAST_WAVE_NUMBER:
+        return jsonify({"message": "Choice stored for wave {}".format(wave_number)}), 200
+
+    # Fetch all choices by the user
     user_choices = UserChoice.query.filter_by(user_id=current_user_id).all()
     cuisine_count = {}
     taste_profile_count = {}
@@ -268,21 +285,24 @@ def store_choice():
 
     # Determine top 3 cuisines
     sorted_cuisines = sorted(cuisine_count.items(), key=lambda item: item[1], reverse=True)
-    top_cuisines = [cuisine for cuisine, count in sorted_cuisines[:3]]
-    for pref in top_cuisines:
-        cuisine_pref = FoodPreference(user_id=current_user_id, preference=pref)
-        db.session.add(cuisine_pref)
-    db.session.commit()
+    
+    if wave_number==15:
+        top_cuisines = [cuisine for cuisine, count in sorted_cuisines[:3]]
+        for pref in top_cuisines:
+            cuisine_pref = FoodPreference(user_id=current_user_id, preference=pref)
+            db.session.add(cuisine_pref)
+        db.session.commit()
 
     # Determine top 7 taste profiles
     sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
-    top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
-    for pref in top_taste_profiles:
-        taste_pref = FoodPreference(user_id=current_user_id, preference=pref)
-        db.session.add(taste_pref)
-    db.session.commit()
 
-    
+    if wave_number==15:
+        top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
+        for pref in top_taste_profiles:
+            taste_pref = FoodPreference(user_id=current_user_id, preference=pref)
+            db.session.add(taste_pref)
+        db.session.commit()
+
     return jsonify({
         "message": "Choice stored successfully",
         "top_cuisines": top_cuisines,
