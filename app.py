@@ -46,6 +46,7 @@ class UserChoice(db.Model):
         self.food_title = food_title
         self.food_image = food_image
         self.cuisine = cuisine
+        self.wave_number = wave_number
 
 # Create tables
 with app.app_context():
