@@ -257,10 +257,7 @@ def store_choice():
     db.session.add(choice)
     db.session.commit()
 
-    # Check if this is the last wave
-    if wave_number < LAST_WAVE_NUMBER:
-        return jsonify({"message": "Choice stored for wave {}".format(wave_number)}), 200
-
+   
     # Fetch all choices by the user
     user_choices = UserChoice.query.filter_by(user_id=current_user_id).all()
     cuisine_count = {}
