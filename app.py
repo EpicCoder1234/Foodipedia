@@ -38,7 +38,6 @@ class UserChoice(db.Model):
     food_image = db.Column(db.String(250), nullable=False)
     cuisine = db.Column(db.PickleType, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    wave_number = db.Column(db.Integer, nullable=False)
 
     def __init__(self, user_id, food_id, food_title, food_image, cuisine):
         self.user_id = user_id
@@ -46,7 +45,6 @@ class UserChoice(db.Model):
         self.food_title = food_title
         self.food_image = food_image
         self.cuisine = cuisine
-        self.wave_number = wave_number
 
 # Create tables
 with app.app_context():
@@ -251,8 +249,7 @@ def store_choice():
         food_id=selected_food['id'],
         food_title=selected_food['title'],
         food_image=selected_food['image'],
-        cuisine=selected_food['cuisine'],
-        wave_number=wave_number
+        cuisine=selected_food['cuisine']
     )
     db.session.add(choice)
     db.session.commit()
