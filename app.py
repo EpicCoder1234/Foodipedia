@@ -7,6 +7,8 @@ import json
 from datetime import datetime
 import os
 
+global wave_number=0
+
 app = Flask(__name__)
 
 # Configurations
@@ -40,7 +42,7 @@ class UserChoice(db.Model):
     food_image = db.Column(db.String(250), nullable=False)
     cuisine = db.Column(db.PickleType, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    wave_number = db.Column(db.Integer, nullable=False)
+    
 
     def __init__(self, user_id, food_id, food_title, food_image, cuisine):
         self.user_id = user_id
@@ -48,7 +50,6 @@ class UserChoice(db.Model):
         self.food_title = food_title
         self.food_image = food_image
         self.cuisine = cuisine
-        self.wave_number = wave_number
 
 # Create tables
 with app.app_context():
@@ -205,7 +206,7 @@ import random
 @jwt_required()
 def random_food_choices():
     user_id = get_jwt_identity()
-
+    wave_number+=1
     # Check if user already has preferences
     user_preferences = FoodPreference.query.filter_by(user_id=user_id).first()
     if user_preferences:
@@ -242,7 +243,6 @@ def store_choice():
     current_user_id = get_jwt_identity()
     data = request.get_json()
     selected_food = data.get('selected_food')
-    wave_number = data.get('wave_number')  # Get the current wave number
 
     if not selected_food:
         return jsonify({"message": "No food choice provided"}), 400
@@ -254,7 +254,6 @@ def store_choice():
         food_title=selected_food['title'],
         food_image=selected_food['image'],
         cuisine=selected_food['cuisine'],
-        wave_number=wave_number
     )
     db.session.add(choice)
     db.session.commit()
