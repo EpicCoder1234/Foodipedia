@@ -40,6 +40,7 @@ class UserChoice(db.Model):
     food_image = db.Column(db.String(250), nullable=False)
     cuisine = db.Column(db.PickleType, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    wave_number = db.Column(db.Integer, nullable=False)
 
     def __init__(self, user_id, food_id, food_title, food_image, cuisine):
         self.user_id = user_id
@@ -47,6 +48,7 @@ class UserChoice(db.Model):
         self.food_title = food_title
         self.food_image = food_image
         self.cuisine = cuisine
+        self.wave_number = wave_number
 
 # Create tables
 with app.app_context():
@@ -241,7 +243,6 @@ def store_choice():
     data = request.get_json()
     selected_food = data.get('selected_food')
     wave_number = data.get('wave_number')  # Get the current wave number
-    print(wave_number)
 
     if not selected_food:
         return jsonify({"message": "No food choice provided"}), 400
@@ -252,12 +253,12 @@ def store_choice():
         food_id=selected_food['id'],
         food_title=selected_food['title'],
         food_image=selected_food['image'],
-        cuisine=selected_food['cuisine']
+        cuisine=selected_food['cuisine'],
+        wave_number=wave_number
     )
     db.session.add(choice)
     db.session.commit()
 
-   
     # Fetch all choices by the user
     user_choices = UserChoice.query.filter_by(user_id=current_user_id).all()
     cuisine_count = {}
@@ -272,7 +273,7 @@ def store_choice():
         # Fetch taste profile for each food choice
         taste_response = requests.get(
             f"https://api.spoonacular.com/recipes/{choice.food_id}/tasteWidget.json",
-            params={'apiKey': API_KEY}
+            params={'apiKey': 'bdbc6045a8d941a88fd09e1e443ff33b'}
         )
         if taste_response.status_code == 200:
             taste_data = taste_response.json()
@@ -283,8 +284,8 @@ def store_choice():
 
     # Determine top 3 cuisines
     sorted_cuisines = sorted(cuisine_count.items(), key=lambda item: item[1], reverse=True)
-    
-    if wave_number==14:
+
+    if wave_number == 14:
         top_cuisines = [cuisine for cuisine, count in sorted_cuisines[:3]]
         for pref in top_cuisines:
             cuisine_pref = FoodPreference(user_id=current_user_id, preference=pref)
@@ -294,7 +295,7 @@ def store_choice():
     # Determine top 7 taste profiles
     sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
 
-    if wave_number==14:
+    if wave_number == 14:
         top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
         for pref in top_taste_profiles:
             taste_pref = FoodPreference(user_id=current_user_id, preference=pref)
