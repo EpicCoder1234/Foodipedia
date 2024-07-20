@@ -7,8 +7,9 @@ import json
 from datetime import datetime
 import os
 
-global wave_number
+
 wave_number=0
+global wave_number
 
 app = Flask(__name__)
 
@@ -207,6 +208,7 @@ import random
 @jwt_required()
 def random_food_choices():
     user_id = get_jwt_identity()
+    global wave_number  # Declare wave_number as global
     wave_number+=1
     # Check if user already has preferences
     user_preferences = FoodPreference.query.filter_by(user_id=user_id).first()
