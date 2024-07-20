@@ -241,6 +241,7 @@ def store_choice():
     data = request.get_json()
     selected_food = data.get('selected_food')
     wave_number = data.get('wave_number')  # Get the current wave number
+    print(wave_number)
 
     if not selected_food:
         return jsonify({"message": "No food choice provided"}), 400
