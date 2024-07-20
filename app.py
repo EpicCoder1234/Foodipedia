@@ -7,6 +7,7 @@ import json
 from datetime import datetime
 import os
 
+global wave_number
 wave_number=0
 
 app = Flask(__name__)
