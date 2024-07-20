@@ -281,7 +281,7 @@ def store_choice():
     # Determine top 3 cuisines
     sorted_cuisines = sorted(cuisine_count.items(), key=lambda item: item[1], reverse=True)
     
-    if wave_number==15:
+    if wave_number==14:
         top_cuisines = [cuisine for cuisine, count in sorted_cuisines[:3]]
         for pref in top_cuisines:
             cuisine_pref = FoodPreference(user_id=current_user_id, preference=pref)
@@ -291,7 +291,7 @@ def store_choice():
     # Determine top 7 taste profiles
     sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
 
-    if wave_number==15:
+    if wave_number==14:
         top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
         for pref in top_taste_profiles:
             taste_pref = FoodPreference(user_id=current_user_id, preference=pref)
