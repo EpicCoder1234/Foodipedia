@@ -11,6 +11,8 @@ app = Flask(__name__)
 
 # Configurations
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'your-database-url')
+API_KEY = os.getenv('SPOONACULAR_API_KEY', 'bdbc6045a8d941a88fd09e1e443ff33b')
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key')
 
@@ -92,7 +94,7 @@ def foodie_test():
 @app.route('/get_ingredients', methods=['GET'])
 @jwt_required()
 def get_ingredients():
-    api_key = 'bdbc6045a8d941a88fd09e1e443ff33b'
+    api_key = API_KEY
     headers = {
         'Content-Type': 'application/json'
     }
@@ -131,7 +133,7 @@ def get_recipes():
     preferences = FoodPreference.query.filter_by(user_id=user_id).all()
     preferences_list = [pref.preference for pref in preferences]
 
-    api_key = 'bdbc6045a8d941a88fd09e1e443ff33b'
+    api_key = API_KEY
     headers = {
         'Content-Type': 'application/json'
     }
@@ -213,7 +215,7 @@ def random_food_choices():
         'https://api.spoonacular.com/recipes/random',
         params={
             'number': 4,
-            'apiKey': 'bdbc6045a8d941a88fd09e1e443ff33b'
+            'apiKey': API_KEY
         }
     )
 
@@ -269,7 +271,7 @@ def store_choice():
         # Fetch taste profile for each food choice
         taste_response = requests.get(
             f"https://api.spoonacular.com/recipes/{choice.food_id}/tasteWidget.json",
-            params={'apiKey': 'bdbc6045a8d941a88fd09e1e443ff33b'}
+            params={'apiKey': API_KEY}
         )
         if taste_response.status_code == 200:
             taste_data = taste_response.json()
