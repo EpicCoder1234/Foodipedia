@@ -5,6 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand:  |
-    pip install -r requirements.txt
-    python migration_script.py
+      pip install -r requirements.txt
+      flask db migrate -m "Add wave_number to UserChoice"
+      flask db upgrade
     startCommand: gunicorn app:app
