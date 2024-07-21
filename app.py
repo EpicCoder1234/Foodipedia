@@ -160,7 +160,7 @@ def get_recipes():
     
     filtered_recipes = []
     for recipe in recipes:
-        if recipe.get('missedIngredientCount', 0) < 5:   
+        if recipe.get('missedIngredientCount', 0) < 10:   
             filtered_recipes.append(recipe)
 
     from groq import Groq
@@ -181,7 +181,7 @@ def get_recipes():
     )
 
     ai_recipes = completion['choices'][0]['message']['content']
-    return jsonify({"message": "No matching recipes found. Here's are some AI generated recipes that you might like instead:", "generated_recipe": ai_recipes}), 200
+    return jsonify(ai_recipes), 200
 
       
     return jsonify(filtered_recipes), 200
