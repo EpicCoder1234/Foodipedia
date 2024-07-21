@@ -58,18 +58,21 @@ with app.app_context():
     db.create_all()  # Create all tables
 
 @app.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-    dietary_limitations = data.get('dietary_limitations')  
-    print(dietary_limitations)
+    dietary_limitations = data.get('dietary_limitations')
+    
     if User.query.filter_by(username=username).first():
         return jsonify({"message": "User already exists"}), 400
+    
     new_user = User(username=username, password=password, dietary_limitations=dietary_limitations)
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User registered successfully"}), 201
+
 
 # User Login
 @app.route('/signin', methods=['GET', 'POST'])
@@ -125,6 +128,8 @@ def get_ingredients():
     except Exception as e:
         return jsonify({"message": "Error processing ingredients", "error": str(e)}), 500
 
+@app.route('/get_recipes', methods=['GET', 'POST'])
+@jwt_required()
 @app.route('/get_recipes', methods=['GET', 'POST'])
 @jwt_required()
 def get_recipes():
