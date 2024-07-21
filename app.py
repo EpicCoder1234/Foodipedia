@@ -167,32 +167,25 @@ def get_recipes():
 
         if len(filtered_recipes) == 0:
             from groq import Groq
-
-            client = Groq(api_key = os.getenv('GROQ_API_KEY'))
+            client = Groq(api_key=os.getenv('GROQ_API_KEY'))
             completion = client.chat.completions.create(
                 model="llama3-70b-8192",
                 messages=[
                     {
                         "role": "user",
                         "content": f"Create as many recipes as possible using the following ingredients: {','.join(ingredients)}, and make sure each recipe fits at least one of these cuisines: {','.join(preferences_list)}. Your response should be just the recipe name, measurements of ingredients, and the recipe steps. Don't type any other text in your response. Don't say \"Here are the recipes,\" just say the recipes"
-                    },
-                    {
-                        "role": "assistant",
-                        "content": "**Italian Chicken and Rice**\n\n* 1 lb chicken, 2 cups rice, 1 tomato, 1 tsp salt, 1 tsp pepper, 2 cups water\n* 1. Heat water in a pot and add salt. Bring to a boil and then add rice. Reduce heat and cover for 18-20 minutes or until cooked.\n* 2. Grill or sauté chicken with pepper until cooked through.\n* 3. Chop tomato and add to cooked rice. Serve with chicken on top.\n\n**Mexican Chicken and Tomato Rice Bowl**\n\n* 1 lb chicken, 1 cup rice, 2 tomatoes, 1 tsp salt, 1 tsp pepper, 1 cup water\n* 1. Cook rice with salt and water in a pot until done.\n* 2. Grill or sauté chicken with pepper until cooked through.\n* 3. Sauté diced tomatoes with salt and pepper. Serve on top of cooked rice with chicken.\n\n**Chicken and Rice Fritters (Italian-Style)**\n\n* 1 lb chicken, 1 cup rice, 1 tomato, 1 tsp salt, 1 tsp pepper, 1 cup water\n* 1. Cook rice with salt and water in a pot until done.\n* 2. Chop cooked chicken and mix with cooked rice, diced tomato, salt, and pepper.\n* 3. Shape into patties and fry in a pan until crispy and golden.\n\n**Arroz con Pollo (Mexican-Style Chicken and Rice)**\n\n* 1 lb chicken, 2 cups rice, 1 tomato, 1 tsp salt, 1 tsp pepper, 2 cups water\n* 1. Cook rice with salt and water in a pot until done.\n* 2. Grill or sauté chicken with pepper until cooked through.\n* 3. Add diced tomato to cooked rice and mix well. Serve with chicken on top.\n\n**Tomato and Chicken Rice Casserole (Italian-Inspired)**\n\n* 1 lb chicken, 1 cup rice, 2 tomatoes, 1 tsp salt, 1 tsp pepper, 1 cup water\n* 1. Cook rice with salt and water in a pot until done.\n* 2. Grill or sauté chicken with pepper until cooked through.\n* 3. Mix cooked rice with diced tomatoes, chicken, salt, and pepper. Transfer to a baking dish and bake at 350°F for 20-25 minutes."
                     }
                 ],
                 temperature=1,
                 max_tokens=1024,
                 top_p=1,
-                stream=True,
+                stream=False,
                 stop=None,
             )
+    
+            ai_recipes = completion['choices'][0]['message']['content']
+            return jsonify({"message": "No matching recipes found. Here's are some AI generated recipes that you might like instead:", "generated_recipe": ai_recipes}), 200
 
-            for chunk in completion:
-                print(chunk.choices[0].delta.content or "", end="")
-
-        
-            return jsonify({"message": "No matching recipes found. Here's are some AI generated recipes that you might like instead:", "generated_recipe": completion}), 200
       
     return jsonify(filtered_recipes), 200
 
@@ -297,17 +290,19 @@ def store_choice():
     # Determine top 7 taste profiles
     sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
 
+    '''
     if wave_number == 2:
         top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
         for pref in top_taste_profiles:
             taste_pref = FoodPreference(user_id=current_user_id, preference=pref)
             db.session.add(taste_pref)
         db.session.commit()
+    '''
 
     return jsonify({
         "message": "Choice stored successfully",
         "top_cuisines": top_cuisines,
-        "top_taste_profiles": top_taste_profiles
+        '''"top_taste_profiles": top_taste_profiles'''
     }), 200
 
 
