@@ -130,8 +130,6 @@ def get_ingredients():
 
 @app.route('/get_recipes', methods=['GET', 'POST'])
 @jwt_required()
-@app.route('/get_recipes', methods=['GET', 'POST'])
-@jwt_required()
 def get_recipes():
     user_id = get_jwt_identity()
     data = request.get_json()
