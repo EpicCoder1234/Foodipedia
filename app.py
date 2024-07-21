@@ -160,10 +160,8 @@ def get_recipes():
     
     filtered_recipes = []
     for recipe in recipes:
-        if recipe.get('missedIngredientCount', 0) < 5:
-            matches_preferences = any(pref in recipe.get('title', '') for pref in preferences_list)
-            if matches_preferences:
-                filtered_recipes.append(recipe)
+        if recipe.get('missedIngredientCount', 0) < 5:   
+            filtered_recipes.append(recipe)
 
         if len(filtered_recipes) == 0:
             from groq import Groq
