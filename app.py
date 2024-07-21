@@ -8,8 +8,7 @@ from datetime import datetime
 import os
 
 global wave_number
-wave_number=0
-
+wave_number = 0
 
 app = Flask(__name__)
 
@@ -29,6 +28,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
+    dietary_limitations = db.Column(db.String(500), nullable=True)
     preferences = db.relationship('FoodPreference', backref='user', lazy=True)
 
 class FoodPreference(db.Model):
@@ -44,7 +44,6 @@ class UserChoice(db.Model):
     food_image = db.Column(db.String(250), nullable=False)
     cuisine = db.Column(db.PickleType, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
 
     def __init__(self, user_id, food_id, food_title, food_image, cuisine):
         self.user_id = user_id
@@ -58,20 +57,21 @@ with app.app_context():
     db.drop_all()  # Drop all tables to ensure a clean slate
     db.create_all()  # Create all tables
 
-@app.route('/signup', methods=['GET','POST'])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
+    dietary_limitations = data.get('dietary_limitations')  
     if User.query.filter_by(username=username).first():
         return jsonify({"message": "User already exists"}), 400
-    new_user = User(username=username, password=password)
+    new_user = User(username=username, password=password, dietary_limitations=dietary_limitations)
     db.session.add(new_user)
     db.session.commit()
     return jsonify({"message": "User registered successfully"}), 201
 
 # User Login
-@app.route('/signin', methods=['GET','POST'])
+@app.route('/signin', methods=['GET', 'POST'])
 def signin():
     data = request.get_json()
     username = data.get('username')
@@ -83,7 +83,7 @@ def signin():
     return jsonify(access_token=access_token), 200
 
 # Foodie Test
-@app.route('/foodie_test', methods=['GET','POST'])
+@app.route('/foodie_test', methods=['GET', 'POST'])
 @jwt_required()
 def foodie_test():
     user_id = get_jwt_identity()
@@ -94,7 +94,6 @@ def foodie_test():
         db.session.add(new_pref)
     db.session.commit()
     return jsonify({"message": "Preferences saved successfully"}), 201
-
 
 @app.route('/get_ingredients', methods=['GET'])
 @jwt_required()
@@ -125,7 +124,7 @@ def get_ingredients():
     except Exception as e:
         return jsonify({"message": "Error processing ingredients", "error": str(e)}), 500
 
-@app.route('/get_recipes', methods=['GET','POST'])
+@app.route('/get_recipes', methods=['GET', 'POST'])
 @jwt_required()
 def get_recipes():
     user_id = get_jwt_identity()
@@ -138,6 +137,9 @@ def get_recipes():
     preferences = FoodPreference.query.filter_by(user_id=user_id).all()
     preferences_list = [pref.preference for pref in preferences]
 
+    user = User.query.get(user_id)
+    dietary_limitations = user.dietary_limitations
+
     api_key = API_KEY
     headers = {
         'Content-Type': 'application/json'
@@ -146,10 +148,11 @@ def get_recipes():
         'apiKey': api_key,
         'ingredients': ','.join(ingredients),
         'number': 10,
-        'ranking': 1
+        'ranking': 1,
+        'intolerances': dietary_limitations  # Add dietary limitations to the query
     }
     response = requests.get('https://api.spoonacular.com/recipes/findByIngredients', headers=headers, params=params)
-    
+
     try:
         recipes = response.json()
     except ValueError:
@@ -157,10 +160,10 @@ def get_recipes():
 
     if not isinstance(recipes, list):
         return jsonify({"message": "Unexpected response format from Spoonacular API", "response": recipes}), 500
-    
+
     filtered_recipes = []
     for recipe in recipes:
-        if recipe.get('missedIngredientCount', 0) < 10:   
+        if recipe.get('missedIngredientCount', 0) < 10:
             filtered_recipes.append(recipe)
 
     from groq import Groq
@@ -170,7 +173,7 @@ def get_recipes():
         messages=[
             {
                 "role": "user",
-                "content": f"Edit these recipes: {filtered_recipes} to make it match these food taste profiles: {','.join(preferences_list)}. Your response should be in the exact same json format that I provided you, just with the edited recipe amounts. In addition, for each recipe, I want you to add a key into the json called \"instructions\" , and write out the instructions in a string and attribute it to the \"instructions\" key. Don't type any other text in your response. Don't say \"Here are the recipes,\" just print the same json I gave you"
+                "content": f"Edit these recipes: {filtered_recipes} to make it match these food taste profiles: {','.join(preferences_list)}. Additionally, make sure that the recipe complies with these dietary limitations: {dietary_limitations} Your response should be in the exact same json format that I provided you, just with the edited recipe amounts. In addition, for each recipe, I want you to add a key into the json called \"instructions\" , and write out the instructions in a string and attribute it to the \"instructions\" key. Don't type any other text in your response. Don't say \"Here are the recipes,\" just print the same json I gave you"
             }
         ],
         temperature=1,
@@ -191,14 +194,14 @@ import random
 def random_food_choices():
     user_id = get_jwt_identity()
     global wave_number  # Declare wave_number as global
-    wave_number+=1
+    wave_number += 1
     # Check if user already has preferences
     user_preferences = FoodPreference.query.filter_by(user_id=user_id).first()
     if user_preferences:
         return jsonify({"message": "User already has preferences"}), 200
 
     wave = int(request.args.get('wave', 1))
-    
+
     response = requests.get(
         'https://api.spoonacular.com/recipes/random',
         params={
@@ -279,7 +282,6 @@ def store_choice():
     # Determine top 7 taste profiles
     sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
 
-    
     if wave_number == 2:
         top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
         for pref in top_taste_profiles:
@@ -287,15 +289,12 @@ def store_choice():
             db.session.add(taste_pref)
         db.session.commit()
 
-
     return jsonify({
         "message": "Choice stored successfully",
         "top_taste_profiles": top_taste_profiles
     }), 200
 
-
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
-
