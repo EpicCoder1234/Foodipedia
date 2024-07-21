@@ -63,6 +63,7 @@ def signup():
     username = data.get('username')
     password = data.get('password')
     dietary_limitations = data.get('dietary_limitations')  
+    print(dietary_limitations)
     if User.query.filter_by(username=username).first():
         return jsonify({"message": "User already exists"}), 400
     new_user = User(username=username, password=password, dietary_limitations=dietary_limitations)
