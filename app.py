@@ -181,16 +181,8 @@ def get_recipes():
     )
 
     ai_recipes = completion['choices'][0]['message']['content']
+    print(ai_recipes)
     return jsonify(ai_recipes), 200
-
-      
-    return jsonify(filtered_recipes), 200
-
-    # Print the filtered recipes for debugging
-    print("Filtered Recipes:")
-    print(filtered_recipes)
-      
-    return jsonify(filtered_recipes), 200
 
 import random
 
