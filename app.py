@@ -163,26 +163,25 @@ def get_recipes():
         if recipe.get('missedIngredientCount', 0) < 5:   
             filtered_recipes.append(recipe)
 
-        if len(filtered_recipes) == 0:
-            from groq import Groq
-            client = Groq(api_key=os.getenv('GROQ_API_KEY'))
-            completion = client.chat.completions.create(
-                model="llama3-70b-8192",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Create as many recipes as possible using the following ingredients: {','.join(ingredients)}, and make sure each recipe fits at least one of these cuisines: {','.join(preferences_list)}. Your response should be just the recipe name, measurements of ingredients, and the recipe steps. Don't type any other text in your response. Don't say \"Here are the recipes,\" just say the recipes"
-                    }
-                ],
-                temperature=1,
-                max_tokens=1024,
-                top_p=1,
-                stream=False,
-                stop=None,
-            )
-    
-            ai_recipes = completion['choices'][0]['message']['content']
-            return jsonify({"message": "No matching recipes found. Here's are some AI generated recipes that you might like instead:", "generated_recipe": ai_recipes}), 200
+    from groq import Groq
+    client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+    completion = client.chat.completions.create(
+        model="llama3-70b-8192",
+        messages=[
+            {
+                "role": "user",
+                "content": f"Edit these recipes: {filtered_recipes} (specifically the ingredient amounts and recipe steps) to make it match these food taste profiles: {','.join(preferences_list)}. Your response should be in the exact same json format that I provided you, just with the edited recipe amounts and edited recipe steps. Don't type any other text in your response. Don't say \"Here are the recipes,\" just print the sam,e json I gave you"
+            }
+        ],
+        temperature=1,
+        max_tokens=1024,
+        top_p=1,
+        stream=False,
+        stop=None,
+    )
+
+    ai_recipes = completion['choices'][0]['message']['content']
+    return jsonify({"message": "No matching recipes found. Here's are some AI generated recipes that you might like instead:", "generated_recipe": ai_recipes}), 200
 
       
     return jsonify(filtered_recipes), 200
@@ -278,29 +277,28 @@ def store_choice():
     # Determine top 3 cuisines
     sorted_cuisines = sorted(cuisine_count.items(), key=lambda item: item[1], reverse=True)
 
-    if wave_number == 2:
+    '''if wave_number == 2:
         top_cuisines = [cuisine for cuisine, count in sorted_cuisines[:3]]
         for pref in top_cuisines:
             cuisine_pref = FoodPreference(user_id=current_user_id, preference=pref)
             db.session.add(cuisine_pref)
-        db.session.commit()
+        db.session.commit()'''
 
     # Determine top 7 taste profiles
     sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
 
-    '''
+    
     if wave_number == 2:
         top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
         for pref in top_taste_profiles:
             taste_pref = FoodPreference(user_id=current_user_id, preference=pref)
             db.session.add(taste_pref)
         db.session.commit()
-    '''
+
 
     return jsonify({
         "message": "Choice stored successfully",
-        "top_cuisines": top_cuisines,
-        '''"top_taste_profiles": top_taste_profiles'''
+        "top_taste_profiles": top_taste_profiles
     }), 200
 
 
