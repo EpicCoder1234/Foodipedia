@@ -170,7 +170,7 @@ def get_recipes():
         messages=[
             {
                 "role": "user",
-                "content": f"Edit these recipes: {filtered_recipes} (specifically the ingredient amounts and recipe steps) to make it match these food taste profiles: {','.join(preferences_list)}. Your response should be in the exact same json format that I provided you, just with the edited recipe amounts and edited recipe steps. Don't type any other text in your response. Don't say \"Here are the recipes,\" just print the sam,e json I gave you"
+                "content": f"Edit these recipes: {filtered_recipes} (specifically the ingredient amounts and recipe steps) to make it match these food taste profiles: {','.join(preferences_list)}. Additionally, return detailed steps regarding the process to make each recipe. Your response should be in the exact same json format that I provided you, just with the edited recipe amounts and edited recipe steps. Don't type any other text in your response. Don't say \"Here are the recipes,\" just print the sam,e json I gave you"
             }
         ],
         temperature=1,
