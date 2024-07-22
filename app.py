@@ -186,10 +186,19 @@ def get_recipes():
         stop=None,
     )
 
-    ai_recipes_content = completion.choices[0].delta.content
-    ai_recipes = json.loads(ai_recipes_content)
+    # Collect the chunks into a list
+    response_chunks = []
+    for chunk in completion:
+        if 'choices' in chunk and len(chunk.choices) > 0 and 'delta' in chunk.choices[0] and 'content' in chunk.choices[0].delta:
+            response_chunks.append(chunk.choices[0].delta.content)
+
+    # Combine the chunks into a single string
+    ai_recipes = ''.join(response_chunks)
     print(ai_recipes)
-    return jsonify(ai_recipes), 200
+
+    # Convert the combined string back to JSON
+    ai_recipes_json = jsonify(ai_recipes)
+    return ai_recipes_json, 200
 
 import random
 
