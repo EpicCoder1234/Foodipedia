@@ -186,8 +186,7 @@ def get_recipes():
         stop=None,
     )
 
-    
-    ai_recipes_content = completion.choices[0].message['content']
+    ai_recipes_content = completion.choices[0].delta.content
     ai_recipes = json.loads(ai_recipes_content)
     print(ai_recipes)
     return jsonify(ai_recipes), 200
