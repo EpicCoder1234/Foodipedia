@@ -58,7 +58,6 @@ with app.app_context():
     db.create_all()  # Create all tables
 
 @app.route('/signup', methods=['GET', 'POST'])
-@app.route('/signup', methods=['GET', 'POST'])
 def signup():
     data = request.get_json()
     username = data.get('username')
