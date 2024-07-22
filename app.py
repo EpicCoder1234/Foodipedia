@@ -172,7 +172,7 @@ def get_recipes():
     from groq import Groq
     client = Groq(api_key=os.getenv('GROQ_API_KEY'))
     completion = client.chat.completions.create(
-        model="llama3-groq-70b-8192-tool-use-preview",
+        model="llama3-8b-8192",
         messages=[
             {
                 "role": "user",
