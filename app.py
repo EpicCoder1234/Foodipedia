@@ -185,10 +185,11 @@ def get_recipes():
         stream=True,
         stop=None,
     )
+    # Collect the chunks into a list
     response_chunks = []
     for chunk in completion:
         if hasattr(chunk, 'choices') and len(chunk.choices) > 0:
-            delta_content = chunk.choices[0].get('delta', {}).get('content', '')
+            delta_content = chunk.choices[0].delta.get('content', '')
             if delta_content:
                 response_chunks.append(delta_content)
 
