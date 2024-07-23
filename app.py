@@ -182,15 +182,15 @@ def get_recipes():
         temperature=1,
         max_tokens=1024,
         top_p=1,
-        stream=False,
+        stream=True,
         stop=None,
     )
-
-    # Collect the chunks into a list
     response_chunks = []
     for chunk in completion:
-        if 'choices' in chunk and len(chunk.choices) > 0 and 'delta' in chunk.choices[0] and 'content' in chunk.choices[0].delta:
-            response_chunks.append(chunk.choices[0].delta.content)
+        if hasattr(chunk, 'choices') and len(chunk.choices) > 0:
+            delta_content = chunk.choices[0].get('delta', {}).get('content', '')
+            if delta_content:
+                response_chunks.append(delta_content)
 
     # Combine the chunks into a single string
     ai_recipes = ''.join(response_chunks)
@@ -199,7 +199,6 @@ def get_recipes():
     # Convert the combined string back to JSON
     ai_recipes_json = jsonify(ai_recipes)
     return ai_recipes_json, 200
-
 import random
 
 @app.route('/random_food_choices', methods=['GET'])
