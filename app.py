@@ -98,35 +98,6 @@ def foodie_test():
     db.session.commit()
     return jsonify({"message": "Preferences saved successfully"}), 201
 
-@app.route('/get_ingredients', methods=['GET'])
-@jwt_required()
-def get_ingredients():
-    api_key = API_KEY
-    headers = {
-        'Content-Type': 'application/json'
-    }
-    response = requests.get(f'https://api.spoonacular.com/food/ingredients', headers=headers, params={'apiKey': api_key})
-
-    print(response)
-
-    if response.status_code != 200:
-        return jsonify({"message": "Error fetching ingredients"}), response.status_code
-
-    try:
-        ingredients = response.json()
-        organized_ingredients = {}
-        for ingredient in ingredients:
-            category = ingredient.get('aisle', 'Miscellaneous')
-            if category not in organized_ingredients:
-                organized_ingredients[category] = []
-            organized_ingredients[category].append({
-                'id': ingredient['id'],
-                'name': ingredient['name']
-            })
-        return jsonify(organized_ingredients), 200
-    except Exception as e:
-        return jsonify({"message": "Error processing ingredients", "error": str(e)}), 500
-
 @app.route('/get_recipes', methods=['GET', 'POST'])
 @jwt_required()
 def get_recipes():
@@ -172,7 +143,7 @@ def get_recipes():
     from groq import Groq
     client = Groq(api_key=os.getenv('GROQ_API_KEY'))
     completion = client.chat.completions.create(
-        model="llama3.1-70b-versatile",
+        model="llama-3.1-70b-versatile",
         messages=[
             {
                 "role": "user",
