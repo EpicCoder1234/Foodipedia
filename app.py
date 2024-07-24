@@ -166,7 +166,7 @@ def get_recipes():
 
     filtered_recipes = []
     for recipe in recipes:
-        if recipe.get('missedIngredientCount', 0) < 5:
+        if recipe.get('missedIngredientCount', 0) < 8:
             filtered_recipes.append(recipe)
 
     from groq import Groq
@@ -176,7 +176,7 @@ def get_recipes():
         messages=[
             {
                 "role": "user",
-                "content": f"Edit these recipes: {filtered_recipes} to make it match these food taste profiles: {','.join(preferences_list)}. Additionally, make sure that the recipe complies with these dietary limitations: {dietary_limitations} Your response should be in the exact same json format that I provided you, just with the edited recipe amounts. In addition, for each recipe, I want you to add a key into the json called \"instructions\" , and write out the instructions in a string and attribute it to the \"instructions\" key. Don't type any other text in your response. Don't say \"Here are the recipes,\" just print the same json I gave you"
+                "content": f"Edit these recipes: {filtered_recipes} to make it match these food taste profiles: {','.join(preferences_list)}. If there are no recipes provided, return that there are no recipes. If there are no dietary restrictions provided, the user does not have any. Additionally, make sure that the recipe complies with these dietary limitations: {dietary_limitations} Your response should be in the exact same json format that I provided you, just with the edited recipe amounts. In addition, for each recipe, I want you to add a key into the json called \"instructions\" , and write out the instructions in a string and attribute it to the \"instructions\" key. Don't type any other text in your response. Don't say \"Here are the recipes,\" just print the same json I gave you"
             }
         ],
         temperature=1,
