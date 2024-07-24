@@ -151,7 +151,7 @@ def get_recipes():
             }
         ],
         temperature=1,
-        max_tokens=131072,
+        max_tokens=8000,
         top_p=1,
         stream=True,
         stop=None,
