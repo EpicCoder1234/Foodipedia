@@ -137,7 +137,7 @@ def get_recipes():
 
     filtered_recipes = []
     for recipe in recipes:
-        if recipe.get('missedIngredientCount', 0) < 15:
+        if recipe.get('missedIngredientCount', 0) < 10:
             filtered_recipes.append(recipe)
 
     from groq import Groq
