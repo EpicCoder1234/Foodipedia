@@ -166,7 +166,7 @@ def get_recipes():
 
     filtered_recipes = []
     for recipe in recipes:
-        if recipe.get('missedIngredientCount', 0) < 10:
+        if recipe.get('missedIngredientCount', 0) < 5:
             filtered_recipes.append(recipe)
 
     from groq import Groq
@@ -199,6 +199,7 @@ def get_recipes():
 
     # Convert the combined string back to JSON
     ai_recipes_json = jsonify(ai_recipes)
+    print(ai_recipes_json)
     return ai_recipes_json, 200
 import random
 
@@ -296,7 +297,7 @@ def store_choice():
     sorted_taste_profiles = sorted(taste_profile_count.items(), key=lambda item: item[1], reverse=True)
 
     if wave_number == 3:
-        top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:7]]
+        top_taste_profiles = [taste for taste, count in sorted_taste_profiles[:3]]
         for pref in top_taste_profiles:
             taste_pref = FoodPreference(user_id=current_user_id, preference=pref)
             db.session.add(taste_pref)
